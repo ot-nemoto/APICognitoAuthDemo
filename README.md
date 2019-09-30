@@ -165,5 +165,7 @@ curl -s -XGET ${INVOKE_URL} -H "Authentication:${TOKEN}" | jq
 ## ポイント
 
 - ユーザプールクライアントの設定で、ユーザ名とパスワードによる認証を有効にする (`USER_PASSWORD_AUTH`)
+  - ref https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/master/template.yaml#L19
 - API Gateway の swagger の定義では、securityDefinitions に認証方法を定義する
   - ここでリクエストヘッダーに `Authentication` を指定するように定義しているので、認証用のヘッダー名を変えたい場合は、ここの定義を修正する
+  - ref https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/master/template.yaml#L65
