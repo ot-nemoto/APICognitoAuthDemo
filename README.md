@@ -6,7 +6,7 @@ API GatewayのリクエストにCognitoによる認証を組み込んだデモ
 
 ## 構成
 
-
+![構成](https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/images/APIGatewayAuthDemo.png)
 
 ## デプロイ
 
