@@ -2,18 +2,23 @@
 
 ## 概要
 
-API GatewayのリクエストにCognitoによる認証を組み込んだデモ
+- API GatewayのリクエストにCognitoによる認証を組み込んだデモ
 
 ## 構成
 
 ![構成](https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/images/APIGatewayAuthDemo.png)
+
+## 前提条件
+
+- aws-cli で構築するため、aws configure の設定は適宜実施していること
 
 ## デプロイ
 
 ```sh
 aws cloudformation create-stack \
     --stack-name api-gateway-auth-demo \
-    --template-body file://template.yml
+    --capabilities CAPABILITY_AUTO_EXPAND \
+    --template-body file://template.yaml
 ```
 
 ## 使い方
@@ -24,7 +29,7 @@ aws cloudformation create-stack \
 
 ```sh
 USER_POOL_ID=$(aws cloudformation describe-stacks \
-    --stack-name simple-authenticate \
+    --stack-name api-gateway-auth-demo \
     --query 'Stacks[].Outputs[?OutputKey==`UserPoolId`].OutputValue' \
     --output text)
 echo ${USER_POOL_ID}
@@ -34,10 +39,13 @@ echo ${USER_POOL_ID}
 ユーザ名は `ot-nemoto@example.com` / 初期パスワードは `Passw0rd?`
 
 ```sh
+USERNAME=ot-nemoto@example.com
+PASSWORD=Passw0rd?
+
 aws cognito-idp admin-create-user \
     --user-pool-id ${USER_POOL_ID} \
-     --username ot-nemoto@example.com \
-    --temporary-password Passw0rd?
+     --username ${USERNAME} \
+    --temporary-password ${PASSWORD}
 ```
 
 ### 初回認証
@@ -46,7 +54,7 @@ aws cognito-idp admin-create-user \
 
 ```sh
 USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks \
-    --stack-name simple-authenticate \
+    --stack-name api-gateway-auth-demo \
     --query 'Stacks[].Outputs[?OutputKey==`UserPoolClientId`].OutputValue' \
     --output text)
 echo ${USER_POOL_CLIENT_ID}
@@ -59,7 +67,7 @@ echo ${USER_POOL_CLIENT_ID}
 aws cognito-idp initiate-auth \
      --auth-flow USER_PASSWORD_AUTH \
      --client-id ${USER_POOL_CLIENT_ID} \
-     --auth-parameters USERNAME=ot-nemoto@example.com,PASSWORD=Passw0rd?
+     --auth-parameters USERNAME=${USERNAME},PASSWORD=${PASSWORD}
   # {
   #     "ChallengeName": "NEW_PASSWORD_REQUIRED",
   #     "ChallengeParameters": {
@@ -73,17 +81,31 @@ aws cognito-idp initiate-auth \
 
 ### パスワード変更
 
-ユーザ作成時には、ユーザのステータスが `FORCE_CHANGE_PASSWORD` であるため、トークンIDを取得できない
+ユーザ作成時には、ユーザのステータスが `FORCE_CHANGE_PASSWORD` であるため、APIの認証に使うためのトークンIDを取得できない
 Sessionを利用し、初期パスワードを更新する
 
-以下では、パスワードを `qwerT1234%` に変更
+Sessionを取得
 
 ```sh
+SESSION=$(aws cognito-idp initiate-auth \
+     --auth-flow USER_PASSWORD_AUTH \
+     --client-id ${USER_POOL_CLIENT_ID} \
+     --auth-parameters USERNAME=${USERNAME},PASSWORD=${PASSWORD} \
+     --query 'Session' --output text)
+echo ${SESSION}
+  # 1a2lI3uS03...JzBV0cyng4
+```
+
+パスワードを `qwerT1234%` に変更
+
+```sh
+NEW_PASSWORD=qwerT1234%
+
 aws cognito-idp respond-to-auth-challenge \
     --client-id ${USER_POOL_CLIENT_ID} \
     --challenge-name NEW_PASSWORD_REQUIRED \
-    --challenge-responses USERNAME=ot-nemoto@example.com,NEW_PASSWORD=qwerT1234% \
-    --session "1a2lI3uS03...JzBV0cyng4"
+    --challenge-responses USERNAME=${USERNAME},NEW_PASSWORD=${NEW_PASSWORD} \
+    --session "${SESSION}"
   # {
   #     "AuthenticationResult": {
   #         "ExpiresIn": 3600,
@@ -96,12 +118,18 @@ aws cognito-idp respond-to-auth-challenge \
   # }
 ```
 
-### トークンID取得
+### APIを実行
+
+認証機能を有効にしたAPIのエンドポイントを取得
 
 ```sh
+INVOKE_URL=$(aws cloudformation describe-stacks \
+    --stack-name api-gateway-auth-demo \
+    --query 'Stacks[].Outputs[?OutputKey==`InvokeURL`].OutputValue' \
+    --output text)
+echo ${INVOKE_URL}
+  # https://a76l5zr17l.execute-api.ap-northeast-1.amazonaws.com/v1/
 ```
-
-### APIを実行
 
 トークンID未設定でAPIを実行
 
@@ -118,14 +146,14 @@ curl -s -XGET ${INVOKE_URL} | jq
 TOKEN=$(aws cognito-idp initiate-auth \
      --auth-flow USER_PASSWORD_AUTH \
      --client-id ${USER_POOL_CLIENT_ID} \
-     --auth-parameters USERNAME=ot-nemoto@example.com,PASSWORD=qwerT1234% \
+     --auth-parameters USERNAME=${USERNAME},PASSWORD=${NEW_PASSWORD} \
      --query 'AuthenticationResult.IdToken' \
      --output text)
 echo ${TOKEN}
   # eyJraWQiOi...lJcHl_o_kg
 ```
 
-APIを実行
+トークンIDをリクエストヘッダーに付与しAPIを実行
 
 ```sh
 curl -s -XGET ${INVOKE_URL} -H "Authentication:${TOKEN}" | jq
@@ -133,3 +161,9 @@ curl -s -XGET ${INVOKE_URL} -H "Authentication:${TOKEN}" | jq
   #   "message": "Hello"
   # }
 ```
+
+## ポイント
+
+- ユーザプールクライアントの設定で、ユーザ名とパスワードによる認証を有効にする (`USER_PASSWORD_AUTH`)
+- API Gateway の swagger の定義では、securityDefinitions に認証方法を定義する
+  - ここでリクエストヘッダーに `Authentication` を指定するように定義しているので、認証用のヘッダー名を変えたい場合は、ここの定義を修正する
