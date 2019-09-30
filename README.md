@@ -79,6 +79,10 @@ aws cognito-idp initiate-auth \
   # }
 ```
 
+マネージドコンソール
+
+![FORCE_CHANGE_PASSWORD]https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/images/force_change_password.png
+
 ### パスワード変更
 
 ユーザ作成時には、ユーザのステータスが `FORCE_CHANGE_PASSWORD` であるため、APIの認証に使うためのトークンIDを取得できない
@@ -117,6 +121,10 @@ aws cognito-idp respond-to-auth-challenge \
   #     "ChallengeParameters": {}
   # }
 ```
+
+マネージドコンソール
+
+![CONFIRMED](https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/images/confirmed.png)
 
 ### APIを実行
 
