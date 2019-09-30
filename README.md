@@ -79,9 +79,9 @@ aws cognito-idp initiate-auth \
   # }
 ```
 
-マネージドコンソール
+マネージドコンソール(*e.g.*)
 
-![FORCE_CHANGE_PASSWORD]https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/images/force_change_password.png
+![FORCE_CHANGE_PASSWORD](https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/images/force_change_password.png)
 
 ### パスワード変更
 
@@ -122,7 +122,7 @@ aws cognito-idp respond-to-auth-challenge \
   # }
 ```
 
-マネージドコンソール
+マネージドコンソール(*e.g.*)
 
 ![CONFIRMED](https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/images/confirmed.png)
 
