@@ -5,17 +5,12 @@ Resources:
   UserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: sample-user-pool
       UsernameAttributes:
       - email
-      Schema:
-      - Name: email
-        Required: true
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       UserPoolId: !Ref UserPool
-      ClientName: sample-user-pool-client
       ExplicitAuthFlows:
       - USER_PASSWORD_AUTH
   Api:
@@ -26,7 +21,7 @@ Resources:
         swagger: "2.0"
         info:
           version: "1.0"
-          title: sample-api
+          title: APIGatewayAuthNDemo
         schemes:
         - https
         paths:
@@ -42,7 +37,7 @@ Resources:
                   schema:
                     $ref: "#/definitions/Empty"
               security:
-              - sample-api-gateway-authorizer: []
+              - APIGatewayAuthNDemo-authorizer: []
               x-amazon-apigateway-integration:
                 type: mock
                 responses:
@@ -60,7 +55,7 @@ Resources:
                     }
                 passthroughBehavior: when_no_templates
         securityDefinitions:
-          sample-api-gateway-authorizer:
+          APIGatewayAuthNDemo-authorizer:
             type: apiKey
             name: Authentication
             in: header
