@@ -1,4 +1,4 @@
-# APIGatewayAuthDemo
+# APIGatewayAuthNDemo
 
 ## 概要
 
@@ -16,7 +16,7 @@
 
 ```sh
 aws cloudformation create-stack \
-    --stack-name api-gateway-auth-demo \
+    --stack-name api-gateway-authn-demo \
     --capabilities CAPABILITY_AUTO_EXPAND \
     --template-body file://template.yaml
 ```
@@ -29,7 +29,7 @@ aws cloudformation create-stack \
 
 ```sh
 USER_POOL_ID=$(aws cloudformation describe-stacks \
-    --stack-name api-gateway-auth-demo \
+    --stack-name api-gateway-authn-demo \
     --query 'Stacks[].Outputs[?OutputKey==`UserPoolId`].OutputValue' \
     --output text)
 echo ${USER_POOL_ID}
@@ -54,7 +54,7 @@ aws cognito-idp admin-create-user \
 
 ```sh
 USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks \
-    --stack-name api-gateway-auth-demo \
+    --stack-name api-gateway-authn-demo \
     --query 'Stacks[].Outputs[?OutputKey==`UserPoolClientId`].OutputValue' \
     --output text)
 echo ${USER_POOL_CLIENT_ID}
@@ -132,7 +132,7 @@ aws cognito-idp respond-to-auth-challenge \
 
 ```sh
 INVOKE_URL=$(aws cloudformation describe-stacks \
-    --stack-name api-gateway-auth-demo \
+    --stack-name api-gateway-authn-demo \
     --query 'Stacks[].Outputs[?OutputKey==`InvokeURL`].OutputValue' \
     --output text)
 echo ${INVOKE_URL}
