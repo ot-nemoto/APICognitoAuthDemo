@@ -6,7 +6,12 @@
 
 ## 構成
 
-![構成](https://github.com/ot-nemoto/APIGatewayAuthDemo/blob/images/APIGatewayAuthDemo.png)
+![構成](https://github.com/ot-nemoto/APIGatewayAuthNDemo/blob/images/APIGatewayAuthDemo_v2.png)
+
+- APIを叩く前に、CognitoからTokenを取得する（このデモでは取得する箇所は aws-cli を使用し、実装してはいない）
+- APIへはCognitoから取得したTokenをヘッダーに付与し、リクエストを投げる
+- API GatewayはヘッダーのTokenでCognitoへ認証を行う
+- 認証が通った場合、API GatewayはLambdaを起動する（Lambdaでは、EC2のインスタンスID一覧を取得する）
 
 ## 前提条件
 
@@ -168,10 +173,10 @@ curl -s -XGET ${INVOKE_URL} -H "Authentication:${TOKEN}" | jq
 ## ポイント
 
 - ユーザプールクライアントの設定で、ユーザ名とパスワードによる認証を有効にする (`USER_PASSWORD_AUTH`)
-  - ref https://github.com/ot-nemoto/APIGatewayAuthNDemo/blob/master/template.yaml#L15
+  - refs https://github.com/ot-nemoto/APIGatewayAuthNDemo/blob/master/template.yaml#L15
 - API Gateway の swagger の定義では、securityDefinitions に認証方法を定義する
   - ここでリクエストヘッダーに `Authentication` を指定するように定義しているので、認証用のヘッダー名を変えたい場合は、ここの定義を修正する
-  - ref https://github.com/ot-nemoto/APIGatewayAuthNDemo/blob/master/template.yaml#L60
+  - refs https://github.com/ot-nemoto/APIGatewayAuthNDemo/blob/master/template.yaml#L60
 - 権限自体はLambdaに持たせる
   - Cognitoではあくまでユーザの認証のみ
   - 認証が通ればLambdaに付与された権限（ec2:DescribeInstances）で処理を実行する
