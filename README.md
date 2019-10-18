@@ -158,7 +158,10 @@ echo ${TOKEN}
 ```sh
 curl -s -XGET ${INVOKE_URL} -H "Authentication:${TOKEN}" | jq
   # {
-  #   "message": "Hello"
+  #   "instanceIds": [
+  #     "i-01234567",
+  #     "i-89012345"
+  #   ]
   # }
 ```
 
@@ -169,3 +172,6 @@ curl -s -XGET ${INVOKE_URL} -H "Authentication:${TOKEN}" | jq
 - API Gateway の swagger の定義では、securityDefinitions に認証方法を定義する
   - ここでリクエストヘッダーに `Authentication` を指定するように定義しているので、認証用のヘッダー名を変えたい場合は、ここの定義を修正する
   - ref https://github.com/ot-nemoto/APIGatewayAuthNDemo/blob/master/template.yaml#L60
+- 権限自体はLambdaに持たせる
+  - Cognitoではあくまでユーザの認証のみ
+  - 認証が通ればLambdaに付与された権限（ec2:DescribeInstances）で処理を実行する
