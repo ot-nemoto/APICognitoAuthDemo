@@ -39,7 +39,7 @@ Resources:
               security:
               - APIGatewayAuthNDemo-authorizer: []
               x-amazon-apigateway-integration:
-                type: mock
+                type: aws_proxy
                 responses:
                   default:
                     statusCode: "200"
@@ -68,6 +68,45 @@ Resources:
           Empty:
             type: object
             title: Empty Schema
+  DescribeInstancesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.7
+      Code:
+        ZipFile: |
+          import json
+          import os
+          import logging
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+          import boto3
+          def handler(event, context):
+            try:
+              logger.info(json.dumps(event))
+              client = boto3.client('ec2')
+              response = client.describe_instances()
+              logger.info(json.dumps(response))
+              return response
+            except Exception as e:
+              logger.error(e)
+              return {}
+      Handler: index.handler
+      Role: !GetAtt DescribeInstancesFunctionRole.Arn
+  DescribeInstancesFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
 Outputs:
   UserPoolId:

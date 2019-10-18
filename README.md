@@ -17,7 +17,7 @@
 ```sh
 aws cloudformation create-stack \
     --stack-name api-gateway-authn-demo \
-    --capabilities CAPABILITY_AUTO_EXPAND \
+    --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_IAM \
     --template-body file://template.yaml
 ```
 
